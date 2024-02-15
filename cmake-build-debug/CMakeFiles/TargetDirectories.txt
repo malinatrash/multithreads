@@ -1,0 +1,3 @@
+/Users/malinatrash/dev/multithreads/cmake-build-debug/CMakeFiles/multithreads.dir
+/Users/malinatrash/dev/multithreads/cmake-build-debug/CMakeFiles/edit_cache.dir
+/Users/malinatrash/dev/multithreads/cmake-build-debug/CMakeFiles/rebuild_cache.dir
