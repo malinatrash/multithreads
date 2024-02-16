@@ -9,7 +9,7 @@
 #include <mutex>
 #include <condition_variable>
 
-const int N = 10;
+constexpr int N = 10;
 std::vector<int> buffer1(N); // Первый буфер
 std::vector<double> buffer2(N); // Второй буфер
 int buffer1_count = 0; // Количество элементов в первом буфере
@@ -20,7 +20,7 @@ std::condition_variable cv1, cv2; // Условные переменные дл�
 // Первый поток: генерация чисел и помещение их в первый буфер
 void producer() {
     for (int i = 0; i < 100; ++i) {
-        int number = 100000 - i * 1000;
+        const int number = 100000 - i * 1000;
         std::unique_lock<std::mutex> lock(mtx);
         cv1.wait(lock, []{ return buffer1_count < N; });
         buffer1[buffer1_count++] = number;
@@ -30,13 +30,13 @@ void producer() {
 }
 
 // Второй поток: извлечение чисел из первого буфера, вычисление функции и помещение результата во второй буфер
-void calculator() {
+[[noreturn]] void calculator() {
     while (true) {
         std::unique_lock<std::mutex> lock(mtx);
         cv2.wait(lock, []{ return buffer1_count > 0; });
-        int number = buffer1[--buffer1_count];
+        const int number = buffer1[--buffer1_count];
         lock.unlock();
-        double result = number / 1000.0;
+        const double result = number / 1000.0;
         lock.lock();
         cv1.notify_one();
         cv2.wait(lock, []{ return buffer2_count < N; });
@@ -46,11 +46,11 @@ void calculator() {
 }
 
 // Третий поток: извлечение чисел из второго буфера и вывод на экран
-void consumer() {
+[[noreturn]] void consumer() {
     while (true) {
         std::unique_lock<std::mutex> lock(mtx);
         cv2.wait(lock, []{ return buffer2_count > 0; });
-        double number = buffer2[--buffer2_count];
+        const double number = buffer2[--buffer2_count];
         lock.unlock();
         std::cout << number << std::endl;
     }
@@ -61,6 +61,7 @@ int main() {
     std::thread calculator_thread(calculator);
     std::thread consumer_thread(consumer);
 
+    // Дожидаемся выполнения потоков
     producer_thread.join();
     calculator_thread.join();
     consumer_thread.join();
